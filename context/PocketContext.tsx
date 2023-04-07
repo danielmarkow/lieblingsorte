@@ -2,9 +2,27 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import PocketBase from "pocketbase";
+import type { RecordAuthResponse, Admin, Record } from "pocketbase";
 import { useQuery } from "@tanstack/react-query";
 
-const PocketContext = createContext({});
+type ContextType = {
+  registerUser: (email: string, password: string) => Promise<Record>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<RecordAuthResponse<Record>>;
+  user: Record | Admin | null;
+  token: string;
+  pb: PocketBase;
+};
+
+const PocketContext = createContext<ContextType>({
+  registerUser: () => new Promise(() => ""),
+  login: () => new Promise(() => ""),
+  user: null,
+  token: "",
+  pb: new PocketBase(),
+});
 
 export const PocketProvider = ({ children }: { children: React.ReactNode }) => {
   const pb = useMemo(
@@ -22,16 +40,16 @@ export const PocketProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
-  const register = (email: string, password: string) => {
-    return pb.collection("users").create({
+  const registerUser = async (email: string, password: string) => {
+    return await pb.collection("users").create({
       email,
       password,
       passwordConfirm: password,
     });
   };
 
-  const login = (email: string, password: string) => {
-    return pb.collection("users").authWithPassword(email, password);
+  const login = async (email: string, password: string) => {
+    return await pb.collection("users").authWithPassword(email, password);
   };
 
   useQuery({
@@ -46,7 +64,7 @@ export const PocketProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   return (
-    <PocketContext.Provider value={{ register, login, user, token, pb }}>
+    <PocketContext.Provider value={{ registerUser, login, user, token, pb }}>
       {children}
     </PocketContext.Provider>
   );
