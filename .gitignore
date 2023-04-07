@@ -33,3 +33,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# pocketbase
+pb_data
+pocketbase
+
+# vscode
+.vscode
+
+# environment variables
+.env
