@@ -1,5 +1,5 @@
 "use client";
-
+import type { Dispatch, SetStateAction } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import PocketBase from "pocketbase";
 import type { RecordAuthResponse, Admin, Record } from "pocketbase";
@@ -11,7 +11,9 @@ type ContextType = {
     email: string,
     password: string
   ) => Promise<RecordAuthResponse<Record>>;
+  logout: () => void;
   user: Record | Admin | null;
+  // setUser: Dispatch<SetStateAction<Record | Admin | null>>;
   token: string;
   pb: PocketBase;
 };
@@ -19,7 +21,9 @@ type ContextType = {
 const PocketContext = createContext<ContextType>({
   registerUser: () => new Promise(() => ""),
   login: () => new Promise(() => ""),
+  logout: () => {},
   user: null,
+  // setUser: () => "",
   token: "",
   pb: new PocketBase(),
 });
@@ -38,7 +42,7 @@ export const PocketProvider = ({ children }: { children: React.ReactNode }) => {
       setToken(token);
       setUser(model);
     });
-  }, []);
+  }, [pb.authStore]);
 
   const registerUser = async (email: string, password: string) => {
     return await pb.collection("users").create({
@@ -50,6 +54,10 @@ export const PocketProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     return await pb.collection("users").authWithPassword(email, password);
+  };
+
+  const logout = () => {
+    return pb.authStore.clear();
   };
 
   useQuery({
@@ -64,7 +72,9 @@ export const PocketProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   return (
-    <PocketContext.Provider value={{ registerUser, login, user, token, pb }}>
+    <PocketContext.Provider
+      value={{ registerUser, login, logout, user, token, pb }}
+    >
       {children}
     </PocketContext.Provider>
   );

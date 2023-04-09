@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { useForm } from "react-hook-form";
 import type { FieldValues } from "react-hook-form";
@@ -23,11 +24,18 @@ type FormValues = {
 export default function Login() {
   const { login } = usePocket();
 
+  const router = useRouter();
+
   const loginMut = useMutation({
-    mutationFn: ({ email, password }: { email: string; password: string }) =>
-      login(email, password),
+    mutationFn: async ({
+      email,
+      password,
+    }: {
+      email: string;
+      password: string;
+    }) => await login(email, password),
     onSuccess: () => {
-      console.log("user logged in");
+      router.push("/orte");
     },
     onError: () => {
       console.error("error during login");
